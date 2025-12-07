@@ -1,0 +1,52 @@
+# --- IDE i Edytory (To o co pytałeś) ---
+# Vim - pliki wymiany i backupu
+*.swp
+*.swo
+*~
+*.netrwhist
+
+# VS Code - lokalne ustawienia workspace
+.vscode/
+*.code-workspace
+
+# JetBrains (PhpStorm/WebStorm) - na wszelki wypadek
+.idea/
+
+# --- System Operacyjny ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# --- Node.js (Twój runtime) ---
+# BARDZO WAŻNE: Nigdy nie commituj bibliotek
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json # Dyskusyjne: W projektach aplikacji zazwyczaj się commituje, w bibliotekach nie. Do Lambdy warto commitować, żeby mieć spójność wersji.
+
+# --- AWS SAM (Serverless Application Model) ---
+# Folder budowania (tu lądują skompilowane funkcje przed wysyłką)
+.aws-sam/
+
+# Pliki konfiguracyjne z sekretami (Bezpieczeństwo!)
+env.json
+samconfig.toml
+# Uwaga: samconfig.toml można commitować JEŚLI nie ma tam sekretów, 
+# ale często dla bezpieczeństwa lepiej go ignorować lub trzymać wersję .example
+
+# --- Logi i pliki tymczasowe ---
+logs/
+*.log
+dist/
+tmp/
+
+# --- Zmienne środowiskowe ---
+.env
+.env.local
+.env.*.local

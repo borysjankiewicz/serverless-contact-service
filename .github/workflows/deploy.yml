@@ -1,0 +1,57 @@
+name: Deploy Backend (AWS SAM)
+
+on:
+  push:
+    branches:
+      - main # Uruchamia się tylko po wypchnięciu zmian na gałąź główną
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pobranie kodu z repozytorium
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Konfiguracja środowiska Python (wymagane przez AWS SAM CLI)
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. Instalacja narzędzia AWS SAM
+      - name: 🛠️ Install AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      # 4. Logowanie do AWS (używamy kluczy IAM z Secrets)
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1 # Upewnij się, że to region Twojego SES! MA BYĆ JAKO GITHUB VARIABLE!!!
+
+      # 5. Budowanie aplikacji (instalacja npm install itp. dzieje się tutaj automatycznie)
+      - name: 🏗️ SAM Build
+        run: sam build
+
+      # 6. Wdrożenie na AWS (Injecting Configuration)
+      # --resolve-s3: Automatycznie tworzy bucket na kod źródłowy (zipy)
+      # --parameter-overrides: Tutaj wstrzykujemy konfigurację z GitHuba do template.yaml
+      - name: 🚀 SAM Deploy
+        run: |
+          sam deploy \
+            --stack-name contact-form-prod \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --region eu-west-1 \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              EnvType=prod \
+              CloudflareKey=${{ secrets.CLOUDFLARE_SECRET_KEY }} \
+              SenderEmail="${{ vars.PROD_SENDER_EMAIL }}" \
+              RecipientEmail="${{ vars.PROD_RECIPIENT_EMAIL }}" \

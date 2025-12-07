@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Uniwersalny Backend Formularza
+
+# 1. PARAMETRY (Tu definiujemy CO wchodzi do fabryki)
+Parameters:
+  EnvType:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod]
+  
+  CloudflareKey:
+    Type: String
+    NoEcho: true # Ukrywa wartość w logach
+  
+  # Tu wprowadzamy dane, zamiast pisać je na sztywno niżej
+  SenderEmail:
+    Type: String
+    Description: "Adres nadawcy (musi być zweryfikowany w SES)"
+  
+  RecipientEmail:
+    Type: String
+    Description: "Adres odbiorcy wiadomości"
+  
+  AllowedOrigins:
+    Type: String
+    Description: "Lista domen oddzielona przecinkami"
+
+# 2. ZASOBY (Tu używamy parametrów przez !Ref)
+Resources:
+  ContactFormFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: submit.handler
+      Runtime: nodejs24.x
+      Architectures: [x86_64]
+      MemorySize: 512
+      Timeout: 15
+      Policies:
+        - AmazonSESFullAccess
+      
+      Environment:
+        Variables:
+          # AWS Pseudo Parameters (Region bierze się sam z kontekstu deployu!)
+          AWS_REGION: !Ref "AWS::Region"
+          
+          # Wstrzykujemy parametry wejściowe
+          CLOUDFLARE_SECRET_KEY: !Ref CloudflareKey
+          ENV_TYPE: !Ref EnvType
+          SENDER_EMAIL: !Ref SenderEmail
+          RECIPIENT_EMAIL: !Ref RecipientEmail
+          ALLOWED_ORIGINS: !Ref AllowedOrigins
+
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          # CORS na poziomie infrastruktury AWS (opcjonalne, bo i tak robisz to w kodzie)
+          AllowOrigins: 
+            - "*" 
+          AllowMethods: [POST]
+
+      # DODAJ TO (Dla SAM Local start-api):
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  FunctionUrl:
+    Value: !GetAtt ContactFormFunctionUrl.FunctionUrl
