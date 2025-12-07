@@ -55,3 +55,4 @@ jobs:
               CloudflareKey=${{ secrets.CLOUDFLARE_SECRET_KEY }} \
               SenderEmail="${{ vars.PROD_SENDER_EMAIL }}" \
               RecipientEmail="${{ vars.PROD_RECIPIENT_EMAIL }}" \
+              AllowedOrigins="${{ vars.PROD_ALLOWED_ORIGINS }}" \
