@@ -42,9 +42,6 @@ Resources:
       
       Environment:
         Variables:
-          # AWS Pseudo Parameters (Region bierze się sam z kontekstu deployu!)
-          AWS_REGION: !Ref "AWS::Region"
-          
           # Wstrzykujemy parametry wejściowe
           CLOUDFLARE_SECRET_KEY: !Ref CloudflareKey
           ENV_TYPE: !Ref EnvType
